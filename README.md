@@ -4,7 +4,7 @@ This project was updated to match the phase 2 goal described in the main branch:
 
 The didactic reason for this approach is that it teaches the core idea behind public-key cryptography in a very concrete way: the private key stays secret, the public key is derived from it, and an address can be created from that public key. The server then verifies ownership by recomputing the address from the private key the client sends. If the computed address matches the sender value, the transfer is accepted. If it does not, the transfer is rejected.
 
-I implemented that model in the app by:
+Implemented that model in the app by:
 - generating real account keys on the backend and mapping them to balance values,
 - validating the sender using the private key in the transfer request,
 - deriving the wallet address automatically in the client from the user’s private key,
@@ -57,15 +57,6 @@ This is a good phase 2 solution because it adds the missing ownership check with
    - File: `/client/src/App.jsx`
    - What changed: the app now keeps the private key and derived address together in component state and passes them to the relevant child components.
    - Why: this makes the data flow easier to understand and shows how one piece of user input can influence several parts of the app.
-
-10. Added clear explanatory comments in the changed code to mark the phase 2 work.
-   - File(s): `/server/index.js`, `/client/src/Wallet.jsx`, `/client/src/App.jsx`, `/client/src/Transfer.jsx`
-   - Why: the comments help future learners connect the code to the cryptographic concept behind it without needing to memorize every step.
-
-11. Documented the reasoning and teaching rationale in the README.
-   - File: `/README.md`
-   - What changed: the summary now explains not just what changed, but why this is the correct educational step before phase 3.
-   - Why: learning is easier when you can see the progression from “fake addresses” to “real ownership” to “signed transactions.”
 
 In short, the flow is now:
 
