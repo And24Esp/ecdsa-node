@@ -1,6 +1,6 @@
 ## Phase 2 Implementation Summary
 
-This project was updated to match the phase 2 goal described above: the server no longer treats wallet IDs as simple placeholders like "0x1" or "0x2". Instead, each account now has a real private key, and the server derives a wallet address from that key using the secp256k1 curve and Keccak hashing. In other words, the address is a function of the private key, which is exactly the kind of ownership check that makes this exercise more realistic.
+This project was updated to match the phase 2 goal described in the main branch: the server no longer treats wallet IDs as simple placeholders like "0x1" or "0x2". Instead, each account now has a real private key, and the server derives a wallet address from that key using the secp256k1 curve and Keccak hashing. In other words, the address is a function of the private key, which is exactly the kind of ownership check that makes this exercise more realistic.
 
 The didactic reason for this approach is that it teaches the core idea behind public-key cryptography in a very concrete way: the private key stays secret, the public key is derived from it, and an address can be created from that public key. The server then verifies ownership by recomputing the address from the private key the client sends. If the computed address matches the sender value, the transfer is accepted. If it does not, the transfer is rejected.
 
