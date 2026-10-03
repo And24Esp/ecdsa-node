@@ -1,7 +1,7 @@
 import { useState } from "react";
 import server from "./server";
 
-function Transfer({ address, setBalance }) {
+function Transfer({ address, setBalance, privateKey }) {
   const [sendAmount, setSendAmount] = useState("");
   const [recipient, setRecipient] = useState("");
 
@@ -10,17 +10,23 @@ function Transfer({ address, setBalance }) {
   async function transfer(evt) {
     evt.preventDefault();
 
+    if (!address || !privateKey) {
+      alert("Enter a valid private key first to derive your wallet address.");
+      return;
+    }
+
     try {
       const {
         data: { balance },
-      } = await server.post(`send`, {
+      } = await server.post("send", {
         sender: address,
-        amount: parseInt(sendAmount),
         recipient,
+        amount: parseInt(sendAmount, 10),
+        privateKey,
       });
       setBalance(balance);
     } catch (ex) {
-      alert(ex.response.data.message);
+      alert(ex.response?.data?.message || "Transfer failed.");
     }
   }
 
@@ -40,7 +46,7 @@ function Transfer({ address, setBalance }) {
       <label>
         Recipient
         <input
-          placeholder="Type an address, for example: 0x2"
+          placeholder="Type an address, for example: 0x5e2d..."
           value={recipient}
           onChange={setValue(setRecipient)}
         ></input>
