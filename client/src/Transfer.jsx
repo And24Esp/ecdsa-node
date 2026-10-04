@@ -1,5 +1,23 @@
 import { useState } from "react";
+import { keccak256 } from "ethereum-cryptography/keccak";
+import { hexToBytes, toHex } from "ethereum-cryptography/utils";
+import * as secp from "ethereum-cryptography/secp256k1";
 import server from "./server";
+
+function createTransferMessage(sender, recipient, amount) {
+  return `${sender}:${recipient}:${amount}`;
+}
+
+//Phase 3: Added transaction signing to the client transfer flow. Imported keccak, utils, and secp256k1 for the purpose.
+function signTransfer(privateKey, sender, recipient, amount) {
+  const sanitizedPrivateKey = privateKey.startsWith("0x") ? privateKey.slice(2) : privateKey;
+  const messageHash = keccak256(
+    new TextEncoder().encode(createTransferMessage(sender, recipient, amount))
+  );
+  const signature = secp.signSync(messageHash, hexToBytes(`0x${sanitizedPrivateKey}`));
+
+  return `0x${toHex(signature)}`;
+}
 
 function Transfer({ address, setBalance, privateKey }) {
   const [sendAmount, setSendAmount] = useState("");
@@ -15,14 +33,23 @@ function Transfer({ address, setBalance, privateKey }) {
       return;
     }
 
+    // Added a validator while doing pahse 3.
+    const amount = parseInt(sendAmount, 10);
+
+    if (Number.isNaN(amount) || amount <= 0) {
+      alert("Please enter a valid transfer amount.");
+      return;
+    }
+
     try {
+      const signature = signTransfer(privateKey, address, recipient, amount);
       const {
         data: { balance },
       } = await server.post("send", {
         sender: address,
         recipient,
-        amount: parseInt(sendAmount, 10),
-        privateKey,
+        amount,
+        signature,
       });
       setBalance(balance);
     } catch (ex) {
