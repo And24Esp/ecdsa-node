@@ -4,8 +4,8 @@ import "./App.scss";
 import { useState } from "react";
 
 function App() {
-  // Phase 2: the app now tracks both the derived wallet address and the private key.
-  // This lets the UI prove wallet ownership before a transfer can be submitted.
+  // Phase 3: the app keeps the wallet address and private key in state, then signs
+  // a transaction hash before sending the signature to the server for verification.
   const [balance, setBalance] = useState(0);
   const [address, setAddress] = useState("");
   const [privateKey, setPrivateKey] = useState("");
