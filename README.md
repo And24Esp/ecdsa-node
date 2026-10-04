@@ -55,3 +55,76 @@ In short, the flow is now:
 That is the heart of phase 3: proving the sender owns the wallet using a valid signature, without sending the private key itself.
 
 > Security note: this project models the core ECDSA pattern very well, but a production blockchain transfer should also include a nonce, chain ID, and other replay-protection fields so a valid signature cannot be replayed against the same account on the same chain without being invalidated.
+
+## Background Flow: How the Signature Relates to the Wallet Address
+
+The easiest way to think about phase 3 is this:
+
+- the wallet address is derived from the private key,
+- the signature is created from the private key and the transaction data,
+- the server does not trust the signature blindly — it recovers the signer from the signature and checks whether that signer equals the `sender` wallet.
+
+So the signature is not the wallet address itself. It is proof that the same private key behind the wallet signed the transaction.
+
+```text
+                    ┌──────────────────────┐
+                    │  User private key    │
+                    │  (kept secret)       │
+                    └──────────┬───────────┘
+                               │
+                               │ derive public key
+                               ▼
+                    ┌──────────────────────┐
+                    │  Public key          │
+                    └──────────┬───────────┘
+                               │
+                               │ Keccak + last 20 bytes
+                               ▼
+                    ┌──────────────────────┐
+                    │  Wallet address      │
+                    │  0xabc...123         │
+                    └──────────┬───────────┘
+                               │
+                               │ user signs:
+                               │ sender:recipient:amount
+                               ▼
+                    ┌──────────────────────┐
+                    │  Signature           │
+                    │  (ECDSA proof)       │
+                    └──────────┬───────────┘
+                               │
+                               │ server reconstructs the same message hash
+                               │ and recovers the public key from the signature
+                               ▼
+                    ┌──────────────────────┐
+                    │  Recovered public    │
+                    │  key -> address      │
+                    └──────────┬───────────┘
+                               │
+                               │ Compare with sender address
+                               ▼
+                    ┌──────────────────────┐
+                    │  Match?              │
+                    │  YES -> allow send   │
+                    │  NO  -> reject       │
+                    └──────────────────────┘
+```
+
+Conceptually, the flow is:
+
+1. A wallet address is derived from a private key.
+2. The user signs the transaction payload with that same private key.
+3. The server recovers the public key from the signature.
+4. The server derives the sender address from the recovered public key.
+5. If that derived address matches the `sender`, the transaction is valid.
+
+This is why a signature can act like a cryptographic “I am the owner of this wallet” proof, without sending the private key itself.
+
+In other words:
+
+- private key = secret proof of ownership
+- public key = derived identity
+- address = human-readable wallet identity
+- signature = proof that a specific message was signed by that private key
+
+That is the key conceptual bridge between the wallet address and the signed transfer.
